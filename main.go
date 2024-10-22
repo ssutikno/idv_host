@@ -1,47 +1,75 @@
 package main
 
 import (
+	"bufio"
+	"encoding/json"
 	"fmt"
 	"log"
-	"os/exec"
+	"net/http"
 	"strings"
+
+	"./modules/kvm"
 )
 
 func main() {
-	// Command to list VMs using virsh
-	cmd := exec.Command("virsh", "list", "--all")
+	http.HandleFunc("/", menuHandler)
+	http.HandleFunc("/vms", listVMsHandler)
+	http.HandleFunc("/vms/reboot/", rebootVMHandler)
 
-	// Execute the command
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Fatal(err)
+	fmt.Println("Starting server on :8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
+func menuHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "KVM Management API")
+	fmt.Fprintln(w, "-----------------")
+	fmt.Fprintln(w, "Available actions:")
+	fmt.Fprintln(w, "1. List all VMs")
+	fmt.Fprintln(w, "2. Reboot a VM")
+	fmt.Fprintln(w, "Enter your choice: ")
+
+	reader := bufio.NewReader(r.Body)
+	input, _ := reader.ReadString('\n')
+	choice := strings.TrimSpace(input)
+
+	switch choice {
+	case "1":
+		listVMsHandler(w, r)
+	case "2":
+		fmt.Fprintln(w, "Enter the name of the VM to reboot: ")
+		vmName, _ := reader.ReadString('\n')
+		vmName = strings.TrimSpace(vmName)
+		r.URL.Path = "/vms/reboot/" + vmName // Simulate URL path for reboot handler
+		rebootVMHandler(w, r)
+	default:
+		fmt.Fprintln(w, "Invalid choice.")
 	}
+}
 
-	// print the output
-	fmt.Println(string(out))
-
-	// Split the output into lines
-	lines := strings.Split(string(out), "\n")
-
-	// print the lines count
-	fmt.Println(len(lines))
-
-	// skip below if there are no VMs
-	if len(lines) <= 4 {
-		fmt.Println("No VMs found")
+func listVMsHandler(w http.ResponseWriter, r *http.Request) {
+	vms, err := kvm.ListVMs()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	// Skip the first two lines (header) and the last line (empty)
-	for _, line := range lines[2 : len(lines)-1] {
-		// Split each line into fields
-		fields := strings.Fields(line)
 
-		// Extract VM ID, Name, and State
-		vmID := fields[0]
-		vmName := fields[1]
-		vmState := fields[2]
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(vms)
+}
 
-		// Print the VM information
-		fmt.Printf("ID: %s, Name: %s, State: %s\n", vmID, vmName, vmState)
+func rebootVMHandler(w http.ResponseWriter, r *http.Request) {
+	vmName := r.URL.Path[len("/vms/reboot/"):]
+	if vmName == "" {
+		http.Error(w, "VM name is required", http.StatusBadRequest)
+		return
 	}
+
+	err := kvm.RebootVM(vmName)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintln(w, "VM rebooted successfully")
 }
