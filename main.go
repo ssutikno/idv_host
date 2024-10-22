@@ -17,6 +17,9 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// print the output
+	fmt.Println(string(out))
+
 	// Split the output into lines
 	lines := strings.Split(string(out), "\n")
 
