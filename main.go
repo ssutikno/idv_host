@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strings"
 
-	"./modules/kvm"
+	"modules/kvm"
 )
 
 func main() {
