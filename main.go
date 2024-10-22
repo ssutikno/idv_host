@@ -27,7 +27,7 @@ func main() {
 	fmt.Println(len(lines))
 
 	// skip below if there are no VMs
-	if len(lines) < 3 {
+	if len(lines) <= 4 {
 		fmt.Println("No VMs found")
 		return
 	}
