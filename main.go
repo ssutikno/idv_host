@@ -23,6 +23,9 @@ func main() {
 	// Split the output into lines
 	lines := strings.Split(string(out), "\n")
 
+	// print the lines count
+	fmt.Println(len(lines))
+
 	// skip below if there are no VMs
 	if len(lines) < 3 {
 		fmt.Println("No VMs found")
