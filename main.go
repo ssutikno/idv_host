@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strings"
 
-	"modules/kvm"
+	"github.com/ssutikno/idv_host/modules/kvm"
 )
 
 func main() {
