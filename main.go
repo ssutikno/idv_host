@@ -20,6 +20,11 @@ func main() {
 	// Split the output into lines
 	lines := strings.Split(string(out), "\n")
 
+	// skip below if there are no VMs
+	if len(lines) < 3 {
+		fmt.Println("No VMs found")
+		return
+	}
 	// Skip the first two lines (header) and the last line (empty)
 	for _, line := range lines[2 : len(lines)-1] {
 		// Split each line into fields
