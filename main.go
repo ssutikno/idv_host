@@ -1,14 +1,13 @@
-package main
+package idv_host
 
 import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"idv_host/kvm"
 	"log"
 	"net/http"
 	"strings"
-
-	"modules/kvm"
 )
 
 func main() {
