@@ -1,4 +1,4 @@
-package idv_host
+package main
 
 import (
 	"bufio"
