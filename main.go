@@ -1,13 +1,11 @@
 package main
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"idv_host/kvm"
 	"log"
 	"net/http"
-	"strings"
 )
 
 func main() {
@@ -20,28 +18,35 @@ func main() {
 }
 
 func menuHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "KVM Management API")
-	fmt.Fprintln(w, "-----------------")
-	fmt.Fprintln(w, "Available actions:")
-	fmt.Fprintln(w, "1. List all VMs")
-	fmt.Fprintln(w, "2. Reboot a VM")
-	fmt.Fprintln(w, "Enter your choice: ")
+	// make menu for the user to choose the action
+	w.Header().Set("Content-Type", "text/html")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintln(w, "Choose an action:")
+	fmt.Fprintln(w, "<ul>")
+	fmt.Fprintln(w, "<li><a href='/vms'>List VMs</a></li>")
+	fmt.Fprintln(w, "<li><a href='/vms/reboot/'>Reboot VM</a></li>")
+	fmt.Fprintln(w, "</ul>")
+	fmt.Fprintln(w, "Enter the name of the VM to reboot:")
+	fmt.Fprintln(w, "<form method='post' action='/vms/reboot/'>")
+	fmt.Fprintln(w, "<input type='text' name='vmName'>")
+	fmt.Fprintln(w, "<input type='submit' value='Reboot'>")
+	fmt.Fprintln(w, "</form>")
 
-	reader := bufio.NewReader(r.Body)
-	input, _ := reader.ReadString('\n')
-	choice := strings.TrimSpace(input)
+	if r.Method == http.MethodPost {
 
-	switch choice {
-	case "1":
-		listVMsHandler(w, r)
-	case "2":
-		fmt.Fprintln(w, "Enter the name of the VM to reboot: ")
-		vmName, _ := reader.ReadString('\n')
-		vmName = strings.TrimSpace(vmName)
-		r.URL.Path = "/vms/reboot/" + vmName // Simulate URL path for reboot handler
-		rebootVMHandler(w, r)
-	default:
-		fmt.Fprintln(w, "Invalid choice.")
+		vmName := r.FormValue("vmName")
+		if vmName == "" {
+			http.Error(w, "VM name is required", http.StatusBadRequest)
+			return
+		}
+
+		err := kvm.RebootVM(vmName)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		fmt.Fprintf(w, "VM %q rebooted successfully", vmName)
 	}
 }
 
