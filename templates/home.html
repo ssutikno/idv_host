@@ -20,28 +20,51 @@
                             <h6 class="m-0 font-weight-bold text-primary">Host</h6>
                         </div>
                         <div class="card-body">
-                            <!-- add host information / status -->
-                             {{ with .Host }}
-                            <p>Host Name: {{.Hostname}}</p>
-                            <p>Host IP: {{.IP}}</p>
-                            <p>Host CPU: {{.CPU}}</p>
-                            <p>Host Memory: {{.Memory}}</p>
-                            <p>Host Disk:
-                            <!-- make table of disk -->
-                             <table>
-                                <tr>
-                                    <th>Path</th>
-                                    <th>Total</th>
-                                </tr>
-                                {{range .Disk}}
-                                <tr>
-                                    <td>{{.Path}}</td>
-                                    <td>{{.Total}}</td>
-                                </tr>
-                                {{end}}
-                            </table>
-                             </p>
-                            <p>Host Uptime: {{.UpTime}}</p>
+                            {{ with .Host }}
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Host Name:</strong> {{.Hostname}}</p>
+                                    <p><strong>Host IP:</strong> {{.IP}}</p>
+                                    <p><strong>Host CPU:</strong> {{.CPU}}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Host Memory:</strong></p>
+                                    <div class="table-responsive" cellspacing="0">
+                                        <table class="table table-sm minimalist-table">
+                                            <tr>
+                                                <th>Total</th>
+                                                <th>Used</th>
+                                                <th>Free</th>
+                                                <th>Percentage</th>
+                                            </tr>
+                                            <tr>
+                                                <td>{{.Memory.Total || humanBytes}}</td>
+                                                <td>{{.Memory.Used ||  humanBytes}}</td>
+                                                <td>{{.Memory.Free ||  humanBytes}}</td>
+                                                <td>{{.Memory.Percentage}}</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <p><strong>Host Disk:</strong>
+                                    <!-- make table of disk -->
+                                     <div class="table-responsive" cellspacing="0">
+                                        <table class="table table-sm minimalist-table">
+                                            <tr>
+                                                <th>Path</th>
+                                                <th>Total</th>
+                                            </tr>
+                                            {{range .Disk}}
+                                            <tr>
+                                                <td>{{.Path}}</td>
+                                                <td class="text-right">{{.Total || humanBytes}}</td>
+                                            </tr>
+                                            {{end}}
+                                        </table>
+                                    </div>
+                                     </p>
+                                </div>
+                            </div>
+                            <p><strong>Host Uptime:</strong> {{.UpTime}}</p>
                             <a href="/api/host/restart" class="btn btn-danger btn-sm">Restart</a>
                             <a href="/api/host/reset" class="btn btn-warning btn-sm">Reset</a>
                             {{end}}

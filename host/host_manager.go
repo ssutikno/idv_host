@@ -14,7 +14,7 @@ type Host struct {
 	Hostname string
 	IP       string
 	CPU      string
-	Memory   string
+	Memory   Memory
 	Disk     []DiskUsage
 	UpTime   string
 }
@@ -25,6 +25,35 @@ type DiskUsage struct {
 	Total       uint64  `json:"total"`
 	Used        uint64  `json:"used"`
 	Free        uint64  `json:"free"`
+	UsedPercent float64 `json:"used_percent"`
+}
+
+// make network interfaces available to the template.
+// the content of the network interfaces is displayed in the web page.
+// values of network interface are including the name of the interface and the IPs Information
+// NetWorkInterface contains information about network interfaces including the name, ips, mac address and status
+
+type NetWorkInterface struct {
+	Name   string   `json:"name"`
+	IPs    []string `json:"ips"`
+	MAC    string   `json:"mac"`
+	Status string   `json:"status"`
+}
+
+// Process represents the process information
+type Process struct {
+	PID       int    `json:"pid"`
+	Name      string `json:"name"`
+	Cmd       string `json:"cmd"`
+	StartTime string `json:"startTime"`
+}
+
+// Memory represents the memory information
+type Memory struct {
+	Total       uint64  `json:"total"`
+	Used        uint64  `json:"used"`
+	Free        uint64  `json:"free"`
+	Available   uint64  `json:"available"`
 	UsedPercent float64 `json:"used_percent"`
 }
 
@@ -47,8 +76,7 @@ func GetHostData() (Host, error) {
 		return Host{}, err
 	}
 
-	cmd = exec.Command("free", "-h")
-	memory, err := cmd.Output()
+	memory, err := GetMemory()
 	if err != nil {
 		return Host{}, err
 	}
@@ -68,7 +96,7 @@ func GetHostData() (Host, error) {
 		Hostname: strings.TrimSpace(string(hostname)),
 		IP:       strings.TrimSpace(string(ip)),
 		CPU:      cpu,
-		Memory:   string(memory),
+		Memory:   memory,
 		Disk:     disk,
 		UpTime:   string(uptime),
 	}
@@ -100,6 +128,32 @@ func GetCPUModel() (string, error) {
 	}
 
 	return "", fmt.Errorf("CPU model name not found")
+}
+
+func GetMemory() (Memory, error) {
+	var memory Memory
+	cmd := exec.Command("free", "-b")
+	output, err := cmd.Output()
+	if err != nil {
+		return memory, err
+	}
+
+	scanner := bufio.NewScanner(strings.NewReader(string(output)))
+	// Skip the header line
+	scanner.Scan()
+	if scanner.Scan() {
+		parts := strings.Fields(scanner.Text())
+		if len(parts) < 7 {
+			return memory, fmt.Errorf("invalid free output")
+		}
+
+		memory.Total = parseSize(parts[1])
+		memory.Used = parseSize(parts[2])
+		memory.Free = parseSize(parts[3])
+		memory.Available = parseSize(parts[6])
+		memory.UsedPercent = float64(memory.Used) / float64(memory.Total) * 100
+	}
+	return memory, nil
 }
 
 // function GetDiskUsage in array of DiskUsage struct
@@ -141,9 +195,107 @@ func parseSize(size string) uint64 {
 	return value
 }
 
+// function parsePID
+func parsePID(pidStr string) (int, error) {
+	var pid int
+	_, err := fmt.Sscanf(pidStr, "%d", &pid)
+	if err != nil {
+		return 0, err
+	}
+	return pid, nil
+}
+
 // function parsePercent
 func parsePercent(percent string) float64 {
 	var value float64
 	fmt.Sscanf(percent, "%f%%", &value)
 	return value
+}
+
+func GetNetworkInterfaces() ([]NetWorkInterface, error) {
+	var interfaces []NetWorkInterface
+	cmd := exec.Command("ip", "a")
+	output, err := cmd.Output()
+	if err != nil {
+		return interfaces, err
+	}
+
+	scanner := bufio.NewScanner(strings.NewReader(string(output)))
+	var iface NetWorkInterface
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.Contains(line, "mtu") {
+			if iface.Name != "" {
+				interfaces = append(interfaces, iface)
+			}
+			iface = NetWorkInterface{}
+			iface.Name = strings.Split(line, ":")[1]
+		} else if strings.Contains(line, "inet") {
+			parts := strings.Fields(line)
+			iface.IPs = append(iface.IPs, parts[1])
+		}
+		// the mac address is in the same line as the name of the interface
+		if strings.Contains(line, "link/ether") {
+			parts := strings.Fields(line)
+			iface.MAC = parts[1]
+		}
+		// the status of the interface is in the same line as the name of the interface
+		if strings.Contains(line, "state") {
+			parts := strings.Fields(line)
+			// if "state" is in the 7th position, the status is in the 8th position. else, the status is in the 10th position
+			if parts[7] == "state" {
+				iface.Status = parts[8]
+			} else {
+				iface.Status = parts[10]
+			}
+			iface.Status = parts[8]
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return interfaces, err
+	}
+
+	return interfaces, nil
+}
+
+func GetProcesses() ([]Process, error) {
+	var processes []Process
+	cmd := exec.Command("ps", "-e", "-o", "pid,comm,lstart")
+	output, err := cmd.Output()
+	if err != nil {
+		return processes, err
+	}
+
+	scanner := bufio.NewScanner(strings.NewReader(string(output)))
+	// Skip the header line
+	scanner.Scan()
+	for scanner.Scan() {
+		parts := strings.Fields(scanner.Text())
+		if len(parts) < 3 {
+			continue
+		}
+
+		pid, err := parsePID(parts[0])
+		if err != nil {
+			continue
+		}
+
+		process := Process{
+			PID:       pid,
+			Name:      parts[1],
+			StartTime: strings.Join(parts[2:], " "),
+		}
+		processes = append(processes, process)
+	}
+	return processes, nil
+}
+
+func KillProcess(pid string) error {
+	cmd := exec.Command("kill", pid)
+	err := cmd.Run()
+	if err != nil {
+		return err
+	}
+	return nil
 }

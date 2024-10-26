@@ -114,3 +114,25 @@ func DestroyVM(vmName string) error {
 	fmt.Printf("Destroyed VM with name: %s\n", vmName)
 	return nil
 }
+
+// CreateVM creates a virtual machine given its name and XML definition
+func CreateVM(vmName, xml string) error {
+	if vmName == "" {
+		return errors.New("vmName cannot be empty")
+	}
+
+	if xml == "" {
+		return errors.New("xml cannot be empty")
+	}
+
+	// print log
+	fmt.Printf("Creating VM with name: %s\n", vmName)
+
+	cmd := exec.Command("virsh", "create", xml)
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+
+	fmt.Printf("Created VM with name: %s\n", vmName)
+	return nil
+}

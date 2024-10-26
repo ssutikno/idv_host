@@ -9,7 +9,13 @@ import (
 )
 
 var tmpl = template.Must(template.ParseFiles("templates/home.html"))
+var index = template.Must(template.ParseFiles("templates/index.html"))
 
+func IndexHandler(w http.ResponseWriter, r *http.Request) {
+	if err := index.Execute(w, nil); err != nil {
+		http.Error(w, "Failed to render template", http.StatusInternalServerError)
+	}
+}
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 
 	vms, err := vm.ListVMs()
@@ -126,4 +132,25 @@ func PowerOffVM(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write([]byte("VM powered off successfully"))
+}
+
+func CreateVM(w http.ResponseWriter, r *http.Request) {
+	vmName := r.URL.Query().Get("name")
+	if vmName == "" {
+		http.Error(w, "Missing VM name", http.StatusBadRequest)
+		return
+	}
+	vmXML := r.URL.Query().Get("xml")
+	if vmXML == "" {
+		http.Error(w, "Missing VM XML", http.StatusBadRequest)
+		return
+	}
+
+	err := vm.CreateVM(vmName, vmXML)
+	if err != nil {
+		http.Error(w, "Failed to create VM", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write([]byte("VM created successfully"))
 }
