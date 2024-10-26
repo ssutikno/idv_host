@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"html/template"
+	"idv_host/host"
 	"idv_host/vm"
 	"net/http"
 )
@@ -10,16 +11,26 @@ import (
 var tmpl = template.Must(template.ParseFiles("templates/home.html"))
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
+
 	vms, err := vm.ListVMs()
 	if err != nil {
 		http.Error(w, "Failed to list VMs", http.StatusInternalServerError)
 		return
 	}
 
+	// log.Println("Listing VMs", vms)
+	hostdata, err := host.GetHostData()
+	if err != nil {
+		http.Error(w, "Failed to get host data", http.StatusInternalServerError)
+		return
+	}
+
 	data := struct {
-		VMs []vm.VM
+		VMs  []vm.VM
+		Host host.Host
 	}{
-		VMs: vms,
+		VMs:  vms,
+		Host: hostdata,
 	}
 
 	if err := tmpl.Execute(w, data); err != nil {
