@@ -38,10 +38,10 @@
                                                 <th>Percentage</th>
                                             </tr>
                                             <tr>
-                                                <td>{{.Memory.Total || humanBytes}}</td>
-                                                <td>{{.Memory.Used ||  humanBytes}}</td>
-                                                <td>{{.Memory.Free ||  humanBytes}}</td>
-                                                <td>{{.Memory.Percentage}}</td>
+                                                <td>{{.Memory.Total}}</td>
+                                                <td>{{.Memory.Used}}</td>
+                                                <td>{{.Memory.Free}}</td>
+                                                <td>{{.Memory.UsedPercent}}</td>
                                             </tr>
                                         </table>
                                     </div>
@@ -56,7 +56,7 @@
                                             {{range .Disk}}
                                             <tr>
                                                 <td>{{.Path}}</td>
-                                                <td class="text-right">{{.Total || humanBytes}}</td>
+                                                <td class="text-right">{{.Total}}</td>
                                             </tr>
                                             {{end}}
                                         </table>

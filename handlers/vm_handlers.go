@@ -5,10 +5,20 @@ import (
 	"html/template"
 	"idv_host/host"
 	"idv_host/vm"
+	"log"
 	"net/http"
+
+	"github.com/dustin/go-humanize"
 )
 
+// var tmpl = template.Must(template.New("home").Funcs(template.FuncMap{"humanizeBytes": humanizeBytes}).ParseFiles("templates/home.html"))
+func humanizeBytes(size uint64) string {
+	log.Println("humanizeBytes")
+	return humanize.Bytes(size)
+}
+
 var tmpl = template.Must(template.ParseFiles("templates/home.html"))
+
 var index = template.Must(template.ParseFiles("templates/index.html"))
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
