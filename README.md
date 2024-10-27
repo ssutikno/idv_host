@@ -12,8 +12,8 @@
 1. prepare a folder named "idv_hostMNG"
 2. change to the folder
 3. open browser to "github.com/ssutikno/idv_host"
-4. copy file "idv_host"
-5. copy folder and the contents "templates"
+4. download file "idv_host"
+5. download folder and the contents "templates"
 6. chmod +x idv_host
 7. ./idv_host
 
