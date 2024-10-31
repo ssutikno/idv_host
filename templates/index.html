@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Host Information</title>
+    <!-- SB Admin CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/startbootstrap-sb-admin/5.1.1/css/sb-admin.min.css" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/startbootstrap-sb-admin/5.1.1/css/sb-admin.css" rel="stylesheet">
+</head>
+
+<body id="page-top">
+
+    <!-- Page Wrapper -->
+    <div id="wrapper">
+
+        <!-- Sidebar -->
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+            <!-- Sidebar - Brand -->
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+                <div class="sidebar-brand-icon">
+                    <i class="fas fa-server"></i>
+                </div>
+                <div class="sidebar-brand-text mx-3">Host Info</div>
+            </a>
+            <!-- Divider -->
+            <hr class="sidebar-divider">
+            <!-- Nav items of Host Information and VMs Information
+             the menu items will change only the content without load full page when clicked -->
+             
+
+             
+            <!-- Divider -->
+
+             
+        </ul>
+        <!-- End of Sidebar -->
+
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+            <div id="content">
+                <!-- Topbar -->
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                    <h1 class="h3 mb-0 text-gray-800">Host Information</h1>
+                </nav>
+
+                <!-- Main Content -->
+                <div class="container-fluid">
+
+                    <!-- Host Information Card -->
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Host Details</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5 class="font-weight-bold">Basic Information</h5>
+                                    <p><strong>Hostname:</strong> <span id="hostname">Host123</span></p>
+                                    <p><strong>IP Address:</strong> <span id="ipAddress">192.168.1.1</span></p>
+                                    <p><strong>Operating System:</strong> <span id="os">Ubuntu 20.04</span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5 class="font-weight-bold">Hardware Information</h5>
+                                    <p><strong>CPU:</strong> <span id="cpu">Intel Xeon 2.3GHz</span></p>
+                                    <p><strong>Memory:</strong> <span id="memory">16GB</span></p>
+                                    <p><strong>Storage:</strong> <span id="storage">500GB SSD</span></p>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col">
+                                    <h5 class="font-weight-bold">Additional Information</h5>
+                                    <p><strong>Status:</strong> <span id="status" class="text-success">Online</span></p>
+                                    <p><strong>Uptime:</strong> <span id="uptime">36 days, 5 hours</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <!-- /.container-fluid -->
+
+            </div>
+            <!-- End of Main Content -->
+
+            <!-- Footer -->
+            <footer class="sticky-footer bg-white">
+                <div class="container my-auto">
+                    <div class="copyright text-center my-auto">
+                        <span>Copyright &copy; Your Website 2023</span>
+                    </div>
+                </div>
+            </footer>
+            <!-- End of Footer -->
+
+        </div>
+        <!-- End of Content Wrapper -->
+
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <!-- SB Admin JavaScript (jQuery, Bootstrap Bundle, SB Admin Scripts) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/startbootstrap-sb-admin/5.1.1/js/sb-admin.js"></script>
+</body>
+
+</html>
