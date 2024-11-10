@@ -1,14 +1,25 @@
 package handlers
 
 import (
-	"encoding/json"
 	"html/template"
 	"idv_host/host"
 	"idv_host/vm"
+	"log"
 	"net/http"
+
+	"github.com/dustin/go-humanize"
+	"github.com/gin-gonic/gin"
 )
 
+// var tmpl = template.Must(template.New("home").Funcs(template.FuncMap{"humanizeBytes": humanizeBytes}).ParseFiles("templates/home.html"))
+
+func humanizeBytes(size uint64) string {
+	log.Println("humanizeBytes")
+	return humanize.Bytes(size)
+}
+
 var tmpl = template.Must(template.ParseFiles("templates/home.html"))
+
 var index = template.Must(template.ParseFiles("templates/index.html"))
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
@@ -16,18 +27,17 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to render template", http.StatusInternalServerError)
 	}
 }
-func HomeHandler(w http.ResponseWriter, r *http.Request) {
 
+func HomeHandler(c *gin.Context) {
 	vms, err := vm.ListVMs()
 	if err != nil {
-		http.Error(w, "Failed to list VMs", http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to list VMs"})
 		return
 	}
 
-	// log.Println("Listing VMs", vms)
 	hostdata, err := host.GetHostData()
 	if err != nil {
-		http.Error(w, "Failed to get host data", http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get host data"})
 		return
 	}
 
@@ -39,118 +49,118 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		Host: hostdata,
 	}
 
-	if err := tmpl.Execute(w, data); err != nil {
-		http.Error(w, "Failed to render template", http.StatusInternalServerError)
+	if err := tmpl.Execute(c.Writer, data); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to render template"})
 	}
 }
 
-func ListVMs(w http.ResponseWriter, r *http.Request) {
+func ListVMs(c *gin.Context) {
 	vms, err := vm.ListVMs()
 	if err != nil {
-		http.Error(w, "Failed to list VMs", http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to list VMs"})
 		return
 	}
 
-	json.NewEncoder(w).Encode(vms)
+	c.JSON(http.StatusOK, vms)
 }
 
-func StartVM(w http.ResponseWriter, r *http.Request) {
-	vmName := r.URL.Query().Get("name")
+func StartVM(c *gin.Context) {
+	vmName := c.Query("name")
 	if vmName == "" {
-		http.Error(w, "Missing VM name", http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing VM name"})
 		return
 	}
 
 	err := vm.StartVM(vmName)
 	if err != nil {
-		http.Error(w, "Failed to start VM", http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to start VM"})
 		return
 	}
 
-	w.Write([]byte("VM started successfully"))
+	c.JSON(http.StatusOK, gin.H{"message": "VM started successfully"})
 }
 
-func RebootVM(w http.ResponseWriter, r *http.Request) {
-	vmName := r.URL.Query().Get("name")
+func RebootVM(c *gin.Context) {
+	vmName := c.Query("name")
 	if vmName == "" {
-		http.Error(w, "Missing VM name", http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing VM name"})
 		return
 	}
 
 	err := vm.RebootVM(vmName)
 	if err != nil {
-		http.Error(w, "Failed to reboot VM", http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to reboot VM"})
 		return
 	}
 
-	w.Write([]byte("VM rebooted successfully"))
+	c.JSON(http.StatusOK, gin.H{"message": "VM rebooted successfully"})
 }
 
-func ResetVM(w http.ResponseWriter, r *http.Request) {
-	vmName := r.URL.Query().Get("name")
+func ResetVM(c *gin.Context) {
+	vmName := c.Query("name")
 	if vmName == "" {
-		http.Error(w, "Missing VM name", http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing VM name"})
 		return
 	}
 
 	err := vm.ResetVM(vmName)
 	if err != nil {
-		http.Error(w, "Failed to reset VM", http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to reset VM"})
 		return
 	}
 
-	w.Write([]byte("VM reset successfully"))
+	c.JSON(http.StatusOK, gin.H{"message": "VM reset successfully"})
 }
 
-func ShutdownVM(w http.ResponseWriter, r *http.Request) {
-	vmName := r.URL.Query().Get("name")
+func ShutdownVM(c *gin.Context) {
+	vmName := c.Query("name")
 	if vmName == "" {
-		http.Error(w, "Missing VM name", http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing VM name"})
 		return
 	}
 
 	err := vm.ShutdownVM(vmName)
 	if err != nil {
-		http.Error(w, "Failed to shutdown VM", http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to shutdown VM"})
 		return
 	}
 
-	w.Write([]byte("VM shutdown successfully"))
+	c.JSON(http.StatusOK, gin.H{"message": "VM shutdown successfully"})
 }
 
-func PowerOffVM(w http.ResponseWriter, r *http.Request) {
-	vmName := r.URL.Query().Get("name")
+func PowerOffVM(c *gin.Context) {
+	vmName := c.Query("name")
 	if vmName == "" {
-		http.Error(w, "Missing VM name", http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing VM name"})
 		return
 	}
 
 	err := vm.DestroyVM(vmName)
 	if err != nil {
-		http.Error(w, "Failed to power off VM", http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to power off VM"})
 		return
 	}
 
-	w.Write([]byte("VM powered off successfully"))
+	c.JSON(http.StatusOK, gin.H{"message": "VM powered off successfully"})
 }
 
-func CreateVM(w http.ResponseWriter, r *http.Request) {
-	vmName := r.URL.Query().Get("name")
+func CreateVM(c *gin.Context) {
+	vmName := c.Query("name")
 	if vmName == "" {
-		http.Error(w, "Missing VM name", http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing VM name"})
 		return
 	}
-	vmXML := r.URL.Query().Get("xml")
+	vmXML := c.Query("xml")
 	if vmXML == "" {
-		http.Error(w, "Missing VM XML", http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing VM XML"})
 		return
 	}
 
 	err := vm.CreateVM(vmName, vmXML)
 	if err != nil {
-		http.Error(w, "Failed to create VM", http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create VM"})
 		return
 	}
 
-	w.Write([]byte("VM created successfully"))
+	c.JSON(http.StatusOK, gin.H{"message": "VM created successfully"})
 }

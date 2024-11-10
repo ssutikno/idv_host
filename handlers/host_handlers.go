@@ -2,41 +2,42 @@
 package handlers
 
 import (
-	"encoding/json"
 	"idv_host/host"
 
 	"net/http"
 	"os/exec"
+
+	"github.com/gin-gonic/gin"
 )
 
 // RestartHost restarts the host machine
-func RestartHost(w http.ResponseWriter, r *http.Request) {
+func RestartHost(c *gin.Context) {
 	cmd := exec.Command("sudo", "reboot")
 	if err := cmd.Run(); err != nil {
-		http.Error(w, "Failed to restart host", http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to restart host"})
 		return
 	}
 
-	w.Write([]byte("Host is restarting..."))
+	c.JSON(http.StatusOK, gin.H{"message": "Host is restarting..."})
 }
 
 // ResetHost resets the host machine
-func ResetHost(w http.ResponseWriter, r *http.Request) {
+func ResetHost(c *gin.Context) {
 	cmd := exec.Command("sudo", "shutdown", "-r", "now")
 	if err := cmd.Run(); err != nil {
-		http.Error(w, "Failed to reset host", http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to reset host"})
 		return
 	}
 
-	w.Write([]byte("Host is resetting..."))
+	c.JSON(http.StatusOK, gin.H{"message": "Host is resetting..."})
 }
 
-func GetNetworkData(w http.ResponseWriter, r *http.Request) {
+func GetNetworkData(c *gin.Context) {
 	network, err := host.GetNetworkInterfaces() // call GetNetworkInterfaces
 	if err != nil {
-		http.Error(w, "Failed to get network data", http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get network data"})
 		return
 	}
 
-	json.NewEncoder(w).Encode(network)
+	c.JSON(http.StatusOK, network)
 }
