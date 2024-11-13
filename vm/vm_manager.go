@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"regexp"
 	"strings"
 )
 
@@ -11,6 +12,33 @@ import (
 type VM struct {
 	Name   string
 	Status string
+}
+
+// getVMXMLPath retrieves the path to the XML configuration file of a VM using virsh dominfo.
+func getVMXMLPath(vmName string) (string, error) {
+	// Execute the virsh dominfo command.
+	cmd := exec.Command("virsh", "dominfo", vmName)
+	var out strings.Builder
+	cmd.Stdout = &out
+	err := cmd.Run()
+	if err != nil {
+		return "", fmt.Errorf("failed to execute virsh dominfo: %w", err)
+	}
+
+	// Find the line containing "Config file:"
+	lines := strings.Split(out.String(), "\n")
+	for _, line := range lines {
+		if strings.HasPrefix(line, "Config file:") {
+			// Extract the path using a regular expression.
+			re := regexp.MustCompile(`Config file:\s*(.*)`)
+			matches := re.FindStringSubmatch(line)
+			if len(matches) == 2 {
+				return strings.TrimSpace(matches[1]), nil
+			}
+		}
+	}
+
+	return "", fmt.Errorf("config file path not found for VM %s", vmName)
 }
 
 // ListVMs returns a list of all available VMs with their status using the virsh command

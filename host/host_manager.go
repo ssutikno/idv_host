@@ -4,6 +4,7 @@ package host
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"strings"
@@ -15,13 +16,14 @@ type Host struct {
 	IP       string
 	CPU      string
 	Memory   Memory
-	Disk     []DiskUsage
+	Disks    []DiskUsage
 	UpTime   string
 }
 
 // DiskUsage contains information about disk space
 type DiskUsage struct {
 	Path        string  `json:"path"`
+	Disk        string  `json:"disks"`
 	Total       uint64  `json:"total"`
 	Used        uint64  `json:"used"`
 	Free        uint64  `json:"free"`
@@ -81,11 +83,11 @@ func GetHostData() (Host, error) {
 		return Host{}, err
 	}
 
-	disk, err := GetDiskUsage()
+	disks, err := GetDiskUsage()
 	if err != nil {
 		return Host{}, err
 	}
-
+	log.Printf("Disks: %v", disks)
 	cmd = exec.Command("uptime", "-p")
 	uptime, err := cmd.Output()
 	if err != nil {
@@ -97,7 +99,7 @@ func GetHostData() (Host, error) {
 		IP:       strings.TrimSpace(string(ip)),
 		CPU:      cpu,
 		Memory:   memory,
-		Disk:     disk,
+		Disks:    disks,
 		UpTime:   string(uptime),
 	}
 	return host, nil
@@ -161,7 +163,7 @@ func GetDiskUsage() ([]DiskUsage, error) {
 	var disk []DiskUsage
 	var partition DiskUsage
 
-	cmd := exec.Command("df", "-h")
+	cmd := exec.Command("df")
 	output, err := cmd.Output()
 	if err != nil {
 		return disk, err
@@ -176,14 +178,16 @@ func GetDiskUsage() ([]DiskUsage, error) {
 			continue
 		}
 
-		// Parse the path information into DiskUsage struct
-		partition.Path = parts[0]
-		partition.Total = parseSize(parts[1])
-		partition.Used = parseSize(parts[2])
-		partition.Free = parseSize(parts[3])
-		partition.UsedPercent = parsePercent(parts[4])
+		// Parse the path information into DiskUsage struct which contains the path is started with '/dev/' and the total, used, free and used percent information
+		if strings.HasPrefix(parts[0], "/dev/") {
+			partition.Path = parts[0]
+			partition.Total = parseSize(parts[1])
+			partition.Used = parseSize(parts[2])
+			partition.Free = parseSize(parts[3])
+			partition.UsedPercent = parsePercent(parts[4])
 
-		disk = append(disk, partition)
+			disk = append(disk, partition)
+		}
 	}
 	return disk, nil
 }

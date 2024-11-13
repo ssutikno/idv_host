@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VM Manager</title>
+    <title>IDV Host Manager</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/startbootstrap-sb-admin-2/4.1.3/css/sb-admin-2.min.css" rel="stylesheet">
 </head>
 
@@ -16,59 +16,74 @@
                 <div class="container-fluid">
                     <h1 class="h3 mb-4 text-gray-800">IDV Host Manager</h1>
                     <div class="card shadow mb-4">
-                        <div class="card-header py-3">
-                            <h6 class="m-0 font-weight-bold text-primary">Host</h6>
-                        </div>
-                        <div class="card-body">
-                            {{ with .Host }}
+                        {{ with .Host }}
+                        <div class="card-header py-3 d-block collapsed" >
                             <div class="row">
                                 <div class="col-md-6">
-                                    <p><strong>Host Name:</strong> {{.Hostname}}</p>
-                                    <p><strong>Host IP:</strong> {{.IP}}</p>
-                                    <p><strong>Host CPU:</strong> {{.CPU}}</p>
+                                    <h6 class="m-0 font-weight-bold text-primary" onclick="toggleHostCardBody()">Host</h6>
                                 </div>
-                                <div class="col-md-6">
-                                    <p><strong>Host Memory:</strong></p>
-                                    <div class="table-responsive" cellspacing="0">
-                                        <table class="table table-sm minimalist-table">
-                                            <tr>
-                                                <th>Total</th>
-                                                <th>Used</th>
-                                                <th>Free</th>
-                                                <th>Percentage</th>
-                                            </tr>
-                                            <tr>
-                                                <td>{{.Memory.Total}}</td>
-                                                <td>{{.Memory.Used}}</td>
-                                                <td>{{.Memory.Free}}</td>
-                                                <td>{{.Memory.UsedPercent}}</td>
-                                            </tr>
-                                        </table>
-                                    </div>
-                                    <p><strong>Host Disk:</strong>
-                                    <!-- make table of disk -->
-                                     <div class="table-responsive" cellspacing="0">
-                                        <table class="table table-sm minimalist-table">
-                                            <tr>
-                                                <th>Path</th>
-                                                <th>Total</th>
-                                            </tr>
-                                            {{range .Disk}}
-                                            <tr>
-                                                <td>{{.Path}}</td>
-                                                <td class="text-right">{{.Total}}</td>
-                                            </tr>
-                                            {{end}}
-                                        </table>
-                                    </div>
-                                     </p>
+                                <div class="col-md-2 text-right">
+                                    <p style="font-size: 0.9em;"><strong>Host Uptime:</strong> {{.UpTime}}</p>
+                                </div>
+                                <div class="col-md-2 text-right">
+                                    <a href="/api/host/restart" class="btn btn-danger btn-sm" style="font-size: 0.9em;">Restart</a>
+                                </div>
+                                <div class="col-md-2 text-right">
+                                    <a href="/api/host/reset" class="btn btn-warning btn-sm" style="font-size: 0.9em;">Reset</a>
                                 </div>
                             </div>
-                            <p><strong>Host Uptime:</strong> {{.UpTime}}</p>
-                            <a href="/api/host/restart" class="btn btn-danger btn-sm">Restart</a>
-                            <a href="/api/host/reset" class="btn btn-warning btn-sm">Reset</a>
-                            {{end}}
                         </div>
+
+                        <div id="hostCardBody" class="collapse hide">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p style="font-size: 0.9em;"><strong>Host Name:</strong> {{.Hostname}}</p>
+                                        <p style="font-size: 0.9em;"><strong>Host IP:</strong> {{.IP}}</p>
+                                        <p style="font-size: 0.9em;"><strong>Host CPU:</strong> {{.CPU}}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p style="font-size: 0.9em;"><strong>Host Memory:</strong></p>
+                                        <div class="table-responsive" cellspacing="0">
+                                            <table class="table table-sm minimalist-table" style="font-size: 0.9em;">
+                                                <tr>
+                                                    <th>Total</th>
+                                                    <th>Used</th>
+                                                    <th>Free</th>
+                                                    <th>Percentage</th>
+                                                </tr>
+                                                <tr>
+                                                    <td>{{.Memory.Total}}</td>
+                                                    <td>{{.Memory.Used}}</td>
+                                                    <td>{{.Memory.Free}}</td>
+                                                    <td>{{.Memory.UsedPercent}}</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <p style="font-size: 0.9em;"><strong>Host Disk:</strong>
+                                        <!-- make table of disk -->
+                                         <div class="table-responsive" cellspacing="0">
+                                            <table class="table table-sm minimalist-table" style="font-size: 0.9em;">
+                                                <tr>
+                                                    <th>Disk</th>
+                                                    <th>Total</th>
+                                                    <th>Free</th>
+                                                </tr>
+                                                {{range .Disks}}
+                                                <tr>
+                                                    <td>{{.Path}}</td>
+                                                    <td class="text-right">{{.Total}}</td>
+                                                    <td class="text-right text-success">{{.Free}}</td>
+                                                </tr>
+                                                {{end}}
+                                            </table>
+                                        </div>
+                                         </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {{end}}
                     </div>                    
                     <div class="card shadow mb-4">
                         <div class="card-header py-3">
@@ -90,11 +105,11 @@
                                             <td>{{.Name}}</td>
                                             <td>{{.Status}}</td>
                                             <td>
-                                                <a href="/api/vms/start?name={{.Name}}" class="btn btn-primary btn-sm">Start</a>
-                                                <a href="/api/vms/reboot?name={{.Name}}" class="btn btn-warning btn-sm">Reboot</a>
-                                                <a href="/api/vms/reset?name={{.Name}}" class="btn btn-info btn-sm">Reset</a>
-                                                <a href="/api/vms/shutdown?name={{.Name}}" class="btn btn-danger btn-sm">Shutdown</a>
-                                                <a href="/api/vms/poweroff?name={{.Name}}" class="btn btn-dark btn-sm">Destroy</a>
+                                                <a href="javascript:void(0);" onclick="startVM('{{.Name}}')" class="btn btn-primary btn-sm">Start</a>
+                                                <a href="javascript:void(0);" onclick="rebootVM('{{.Name}}')" class="btn btn-warning btn-sm">Reboot</a>
+                                                <a href="javascript:void(0);" onclick="resetVM('{{.Name}}')" class="btn btn-info btn-sm">Reset</a>
+                                                <a href="javascript:void(0);" onclick="shutdownVM('{{.Name}}')" class="btn btn-danger btn-sm">Shutdown</a>
+                                                <a href="javascript:void(0);" onclick="poweroffVM('{{.Name}}')" class="btn btn-dark btn-sm">Destroy</a>
                                             </td>
                                             
                                         </tr>
@@ -114,6 +129,106 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/startbootstrap-sb-admin-2/4.1.3/js/sb-admin-2.min.js"></script>
+
+    <script>
+        // save token to local storage
+        localStorage = window.localStorage;
+        localStorage.setItem('token', '{{.Token}}');
+
+        function rebootVM(name) {
+            $.ajax({
+            url: "/api/vms/reboot",
+            type: "POST",
+            data: { name: name, token: localStorage.getItem('token') },
+            success: function() {
+            location.reload();
+            }
+            });
+        }
+
+        // function for startVM button
+        function startVM(name) {
+            $.ajax({
+            url: "/api/vms/start",
+            type: "POST",
+            data: { name: name, token: localStorage.getItem('token') },
+            success: function() {
+            location.reload();
+            }
+            });
+        }
+
+        // function for resetVM button
+        function resetVM(name) {
+            $.ajax({
+            url: "/api/vms/reset",
+            type: "POST",
+            data: { name: name, token: localStorage.getItem('token') },
+            success: function() {
+            location.reload();
+            }
+            });
+        }
+
+        // function for shutdownVM button
+        function shutdownVM(name) {
+            $.ajax({
+            url: "/api/vms/shutdown",
+            type: "POST",
+            data: { name: name, token: localStorage.getItem('token') },
+            success: function() {
+            location.reload();
+            }
+            });
+        }
+
+        // function for poweroffVM button
+        function poweroffVM(name) {
+            $.ajax({
+            url: "/api/vms/poweroff",
+            type: "POST",
+            data: { name: name, token: localStorage.getItem('token') },
+            success: function() {
+            location.reload();
+            }
+            });
+        }
+
+        // function for host restart button
+        function restartHost() {
+            $.ajax({
+            url: "/api/host/restart",
+            type: "POST",
+            data: { token: localStorage.getItem('token') },
+            success: function() {
+            location.reload();
+            }
+            });
+        }
+
+        // function for host reset button
+        function resetHost() {
+            $.ajax({
+            url: "/api/host/reset",
+            type: "POST",
+            data: { token: localStorage.getItem('token') },
+            success: function() {
+            location.reload();
+            }
+            });
+        }
+
+        // function for host body show
+        function toggleHostCardBody() {
+            if ($('#hostCardBody').is(':visible')) {
+                $('#hostCardBody').hide();
+            } else {
+                $('#hostCardBody').show();
+            }
+            
+        }
+
+    </script>
 </body>
 
 </html>
