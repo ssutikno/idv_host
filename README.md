@@ -6,6 +6,6 @@ Intelligent Desktop Virtualization Host Management.
 2. Manage the Host for Reboot / Reset
 3. Manage VMs on the Host for Start, Reboot, Reset, Shutdown, and Power Off
 
-4. Later will be added features needed for managing the host and vm configurations.
+4. Later will be added features needed for managing the host and vm configurations via idv_server.
 
 IDV is supported by Intel
