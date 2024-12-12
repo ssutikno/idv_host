@@ -3,7 +3,6 @@ package host
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"syscall"
@@ -41,7 +40,7 @@ func GetDisks() ([]DiskUsage, error) {
 			Free:  free,
 		})
 	}
-	log.Println("Disks", disks)
+	// log.Println("Disks", disks)
 	return disks, nil
 }
 

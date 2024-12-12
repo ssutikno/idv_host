@@ -131,10 +131,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/startbootstrap-sb-admin-2/4.1.3/js/sb-admin-2.min.js"></script>
 
     <script>
-        // save token to local storage
-        localStorage = window.localStorage;
-        localStorage.setItem('token', '{{.Token}}');
 
+// check if token is not exist, redirect to login page  
+
+        // if (!localStorage.getItem('token')) {
+        //     window.location.href = '/login';
+        // }
+        
         function rebootVM(name) {
             $.ajax({
             url: "/api/vms/reboot",

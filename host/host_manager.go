@@ -4,7 +4,6 @@ package host
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"strings"
@@ -87,7 +86,7 @@ func GetHostData() (Host, error) {
 	if err != nil {
 		return Host{}, err
 	}
-	log.Printf("Disks: %v", disks)
+	// log.Printf("Disks: %v", disks)
 	cmd = exec.Command("uptime", "-p")
 	uptime, err := cmd.Output()
 	if err != nil {

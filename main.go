@@ -63,17 +63,13 @@ func generateToken(user User) (string, error) {
 	return tokenString, nil
 }
 
-// authMiddleware is a middleware that checks if the user is authenticated
-// If the user is authenticated, it will call the next handler
-// If the user is not authenticated, it will return 401
-// if there is token on header, then check token validity
-// if the token is valid, then call the next handler
-// if the token is not valid, then return 401
-
 func authMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// get the token from the Authorization header
 		tokenString := c.GetHeader("Authorization")
+		// print the token
+		log.Println("Token:", tokenString)
+
 		if tokenString == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			c.Abort()
@@ -102,6 +98,7 @@ func authMiddleware() gin.HandlerFunc {
 		}
 
 		// call the next handler
+
 		c.Next()
 	}
 }
@@ -138,7 +135,7 @@ func Auth(c *gin.Context) {
 
 // handle the login handler
 func LoginHandler(c *gin.Context) {
-	log.Println("LoginHandler")
+	// log.Println("LoginHandler")
 
 	// Check if the template file exists
 	if _, err := os.Stat("templates/login.html"); os.IsNotExist(err) {
@@ -149,6 +146,56 @@ func LoginHandler(c *gin.Context) {
 
 	// Render the login page
 	c.HTML(http.StatusOK, "login.html", nil)
+}
+
+// make another authMiddleware function for the homehandler
+func homeauthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// get the username and password from form data
+
+		// get form data of the username and password
+		username := c.PostForm("username")
+		password := c.PostForm("password")
+		// log the form data
+		log.Println("HomeAuthMiddleware - username:", username)
+		log.Println("HomeAuthMiddleware - password:", password)
+
+		// check if the username and password are empty
+		if username == "" || password == "" {
+			c.Redirect(http.StatusFound, "/login")
+			log.Println("LoginHandler - empty username or password")
+			c.Abort()
+			return
+		}
+
+		// check if the username and password are valid, then redirect to the homehandler
+		found := false
+		for _, u := range users {
+			if u.Username == username && u.Password == password {
+				found = true
+				break
+			}
+		}
+
+		if found {
+			// add authorization token header and Bearer to the response
+			token, err := generateToken(User{Username: username, Password: password})
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+				return
+			}
+			// add Bearer to the token
+			token = "Bearer " + token
+			// add authorization token to the next header
+			c.Header("Authorization", token)
+			// call the next handler
+			c.Next()
+		} else {
+			c.Redirect(http.StatusFound, "/login")
+			log.Println("HomeAuthMiddleware - invalid username or password")
+		}
+
+	}
 }
 
 // main function
@@ -169,6 +216,8 @@ func main() {
 		api.POST("/vms/poweroff", handlers.PowerOffVM)
 		api.POST("/vms/create", handlers.CreateVM)
 
+		// api.GET("/vms/createvmform", handlers.CreateVMForm)
+
 		api.GET("/host/network", handlers.GetNetworkData)
 
 		api.POST("/host/restart", handlers.RestartHost)
@@ -177,12 +226,13 @@ func main() {
 
 	// handle login form
 	router.GET("/login", LoginHandler)
+	router.GET("/createvmform", handlers.CreateVMForm)
 
-	// handle authentication
-	router.POST("/login", Auth)
+	// handle authentication from login form, and redirect to home page
+	router.POST("/login", homeauthMiddleware(), handlers.HomeHandler)
 
-	// handle for the homehandler page
-	router.GET("/", handlers.HomeHandler)
+	// handle for the homehandler page, if not athenticated, then redirect to login page
+	router.GET("/", homeauthMiddleware(), handlers.HomeHandler)
 
 	// Start the server
 

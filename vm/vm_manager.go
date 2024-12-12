@@ -14,6 +14,28 @@ type VM struct {
 	Status string
 }
 
+// createVM function creates a new virtual machine with the given name and XML definition.
+func createVM(vmName, xml string) error {
+	if vmName == "" {
+		return errors.New("vmName cannot be empty")
+	}
+
+	if xml == "" {
+		return errors.New("xml cannot be empty")
+	}
+
+	// print log
+	fmt.Printf("Creating VM with name: %s\n", vmName)
+
+	cmd := exec.Command("virsh", "create", xml)
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+
+	fmt.Printf("Created VM with name: %s\n", vmName)
+	return nil
+}
+
 // getVMXMLPath retrieves the path to the XML configuration file of a VM using virsh dominfo.
 func getVMXMLPath(vmName string) (string, error) {
 	// Execute the virsh dominfo command.

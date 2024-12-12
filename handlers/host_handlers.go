@@ -1,8 +1,9 @@
-// handlers/host.go
+// handlers/host_handlers.go
 package handlers
 
 import (
 	"idv_host/host"
+	"log"
 
 	"net/http"
 	"os/exec"
@@ -23,6 +24,7 @@ func RestartHost(c *gin.Context) {
 
 // ResetHost resets the host machine
 func ResetHost(c *gin.Context) {
+	log.Println("Resetting host")
 	cmd := exec.Command("sudo", "shutdown", "-r", "now")
 	if err := cmd.Run(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to reset host"})
@@ -41,3 +43,5 @@ func GetNetworkData(c *gin.Context) {
 
 	c.JSON(http.StatusOK, network)
 }
+
+//

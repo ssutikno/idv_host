@@ -7,16 +7,15 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/dustin/go-humanize"
 	"github.com/gin-gonic/gin"
 )
 
 // var tmpl = template.Must(template.New("home").Funcs(template.FuncMap{"humanizeBytes": humanizeBytes}).ParseFiles("templates/home.html"))
 
-func humanizeBytes(size uint64) string {
-	log.Println("humanizeBytes")
-	return humanize.Bytes(size)
-}
+// func humanizeBytes(size uint64) string {
+// 	log.Println("humanizeBytes")
+// 	return humanize.Bytes(size)
+// }
 
 var tmpl = template.Must(template.ParseFiles("templates/home.html"))
 
@@ -48,10 +47,32 @@ func HomeHandler(c *gin.Context) {
 		VMs:  vms,
 		Host: hostdata,
 	}
+	// print the data
+	log.Println("From Home Handler : ", data)
+	// c.HTML(http.StatusOK, "home.html", data)
 
 	if err := tmpl.Execute(c.Writer, data); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to render template"})
 	}
+
+}
+
+// createVM form to genereate a new VM xml file, and then create the VM
+func CreateVMForm(c *gin.Context) {
+	// Check if the template file exists
+	if _, err := tmpl.ParseFiles("templates/create_vm.html"); err != nil {
+		log.Println("Template file not found:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+
+		return
+	}
+
+	log.Println("CreateVMForm")
+	// Render the create VM page
+	// send the create_vm.html template to the client
+
+	c.HTML(http.StatusOK, "create_vm.html", nil)
+
 }
 
 func ListVMs(c *gin.Context) {
@@ -78,6 +99,8 @@ func StartVM(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "VM started successfully"})
+	// print log message
+	log.Println("VM started successfully")
 }
 
 func RebootVM(c *gin.Context) {
