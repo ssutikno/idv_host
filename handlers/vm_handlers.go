@@ -41,11 +41,13 @@ func HomeHandler(c *gin.Context) {
 	}
 
 	data := struct {
-		VMs  []vm.VM
-		Host host.Host
+		VMs   []vm.VM
+		Host  host.Host
+		Token string
 	}{
-		VMs:  vms,
-		Host: hostdata,
+		VMs:   vms,
+		Host:  hostdata,
+		Token: c.GetString("token"),
 	}
 	// print the data
 	log.Println("From Home Handler : ", data)
@@ -86,7 +88,14 @@ func ListVMs(c *gin.Context) {
 }
 
 func StartVM(c *gin.Context) {
-	vmName := c.Query("name")
+
+	// vmName := c.Query("name")
+
+	//  get vmName from the form data
+	vmName := c.PostForm("name")
+	// print the vmName
+	log.Println("StartVM - vmName:", vmName)
+
 	if vmName == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing VM name"})
 		return
@@ -104,7 +113,7 @@ func StartVM(c *gin.Context) {
 }
 
 func RebootVM(c *gin.Context) {
-	vmName := c.Query("name")
+	vmName := c.PostForm("name")
 	if vmName == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing VM name"})
 		return
@@ -120,7 +129,7 @@ func RebootVM(c *gin.Context) {
 }
 
 func ResetVM(c *gin.Context) {
-	vmName := c.Query("name")
+	vmName := c.PostForm("name")
 	if vmName == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing VM name"})
 		return
@@ -136,7 +145,7 @@ func ResetVM(c *gin.Context) {
 }
 
 func ShutdownVM(c *gin.Context) {
-	vmName := c.Query("name")
+	vmName := c.PostForm("name")
 	if vmName == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing VM name"})
 		return
@@ -152,7 +161,7 @@ func ShutdownVM(c *gin.Context) {
 }
 
 func PowerOffVM(c *gin.Context) {
-	vmName := c.Query("name")
+	vmName := c.PostForm("name")
 	if vmName == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing VM name"})
 		return
@@ -168,7 +177,7 @@ func PowerOffVM(c *gin.Context) {
 }
 
 func CreateVM(c *gin.Context) {
-	vmName := c.Query("name")
+	vmName := c.PostForm("name")
 	if vmName == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing VM name"})
 		return

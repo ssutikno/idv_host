@@ -68,7 +68,7 @@ func authMiddleware() gin.HandlerFunc {
 		// get the token from the Authorization header
 		tokenString := c.GetHeader("Authorization")
 		// print the token
-		log.Println("Token:", tokenString)
+		log.Println("Auth Midleware Token:", tokenString)
 
 		if tokenString == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
@@ -98,7 +98,8 @@ func authMiddleware() gin.HandlerFunc {
 		}
 
 		// call the next handler
-
+		// log the token
+		log.Println("Auth Middleware - Token Exiting :")
 		c.Next()
 	}
 }
@@ -185,9 +186,10 @@ func homeauthMiddleware() gin.HandlerFunc {
 				return
 			}
 			// add Bearer to the token
-			token = "Bearer " + token
-			// add authorization token to the next header
-			c.Header("Authorization", token)
+			c.Request.Header.Set("Authorization", "Bearer "+token)
+			// add token to the data
+			c.Set("token", token)
+
 			// call the next handler
 			c.Next()
 		} else {
