@@ -134,15 +134,20 @@
 
 // check if token is not exist, redirect to login page  
 
-        // if (!localStorage.getItem('token')) {
-        //     window.location.href = '/login';
-        // }
-        
+      // get token from authorization header
+
+
+      
+       
+        alert("{{.Token}}");
+
+
         function rebootVM(name) {
             $.ajax({
             url: "/api/vms/reboot",
             type: "POST",
-            data: { name: name, token: localStorage.getItem('token') },
+            headers: { "Authorization": "Bearer {{.Token}}" },
+            data: { name: name},
             success: function() {
             location.reload();
             }
@@ -154,7 +159,8 @@
             $.ajax({
             url: "/api/vms/start",
             type: "POST",
-            data: { name: name, token: localStorage.getItem('token') },
+            headers: { "Authorization": "Bearer {{.Token}}" },
+            data: { name: name },
             success: function() {
             location.reload();
             }
@@ -166,7 +172,8 @@
             $.ajax({
             url: "/api/vms/reset",
             type: "POST",
-            data: { name: name, token: localStorage.getItem('token') },
+            headers: { "Authorization": "Bearer {{.Token}}" },
+            data: { name: name },
             success: function() {
             location.reload();
             }
@@ -178,7 +185,8 @@
             $.ajax({
             url: "/api/vms/shutdown",
             type: "POST",
-            data: { name: name, token: localStorage.getItem('token') },
+            headers: { "Authorization": "Bearer {{.Token}}" },
+            data: { name: name },
             success: function() {
             location.reload();
             }
@@ -190,7 +198,8 @@
             $.ajax({
             url: "/api/vms/poweroff",
             type: "POST",
-            data: { name: name, token: localStorage.getItem('token') },
+            headers: { "Authorization": "Bearer {{.Token}}" },
+            data: { name: name },
             success: function() {
             location.reload();
             }
@@ -202,7 +211,8 @@
             $.ajax({
             url: "/api/host/restart",
             type: "POST",
-            data: { token: localStorage.getItem('token') },
+            headers: { "Authorization": "Bearer {{.Token}}" },
+            data: {  },
             success: function() {
             location.reload();
             }
@@ -214,7 +224,8 @@
             $.ajax({
             url: "/api/host/reset",
             type: "POST",
-            data: { token: localStorage.getItem('token') },
+            headers: { "Authorization": "Bearer {{.Token}}" },
+            data: { },
             success: function() {
             location.reload();
             }

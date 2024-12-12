@@ -41,11 +41,13 @@ func HomeHandler(c *gin.Context) {
 	}
 
 	data := struct {
-		VMs  []vm.VM
-		Host host.Host
+		VMs   []vm.VM
+		Host  host.Host
+		Token string
 	}{
-		VMs:  vms,
-		Host: hostdata,
+		VMs:   vms,
+		Host:  hostdata,
+		Token: c.GetString("token"),
 	}
 	// print the data
 	log.Println("From Home Handler : ", data)

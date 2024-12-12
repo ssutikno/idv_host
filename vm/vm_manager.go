@@ -3,6 +3,7 @@ package vm
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -90,6 +91,9 @@ func ListVMs() ([]VM, error) {
 
 // StartVM starts a virtual machine given its name
 func StartVM(vmName string) error {
+	// log the VM name
+	log.Println("Starting VM with name: ", vmName)
+
 	if vmName == "" {
 		return errors.New("vmName cannot be empty")
 	}
