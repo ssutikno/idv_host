@@ -31,8 +31,6 @@ func CreateVM(c *gin.Context) {
 // Createa a new VM instance
 func CreateVMInstance(c *gin.Context) {
 
-	}
-
 	c.JSON(http.StatusOK, gin.H{"message": "VM created successfully"})
 }
 
@@ -71,3 +69,13 @@ func GetNetworkData(c *gin.Context) {
 }
 
 //
+
+func GetHostData(c *gin.Context) {
+	hostData, err := host.GetHostData()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get host data"})
+		return
+	}
+
+	c.JSON(http.StatusOK, hostData)
+}
