@@ -50,12 +50,18 @@ func HomeHandler(c *gin.Context) {
 		Token: c.GetString("token"),
 	}
 	// print the data
-	log.Println("From Home Handler : ", data)
-	// c.HTML(http.StatusOK, "home.html", data)
+	log.Println("From Home Handler : ")
 
-	if err := tmpl.Execute(c.Writer, data); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to render template"})
-	}
+	// change the address of the url, to the home.html
+	// if err := tmpl.Execute(c.Writer, data); err != nil {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to render template"})
+	// }
+	// send the home.html template to the client
+	c.HTML(http.StatusOK, "home.html", data)
+
+	// if err := tmpl.Execute(c.Writer, data); err != nil {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to render template"})
+	// }
 
 }
 
@@ -174,25 +180,4 @@ func PowerOffVM(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "VM powered off successfully"})
-}
-
-func CreateVM(c *gin.Context) {
-	vmName := c.PostForm("name")
-	if vmName == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing VM name"})
-		return
-	}
-	vmXML := c.Query("xml")
-	if vmXML == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing VM XML"})
-		return
-	}
-
-	err := vm.CreateVM(vmName, vmXML)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create VM"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "VM created successfully"})
 }
