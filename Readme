@@ -1,0 +1,18 @@
+# IDV Host Application User Guide
+
+## Introduction
+Welcome to the IDV Host Application. This guide will help you get started with the application.
+
+## Default Credentials
+- **Username:** admin
+- **Password:** admin123
+
+## Accessing the Application
+To access the application, open your web browser and navigate to the URL using the IP address where the app is running, followed by port 8080. For example, if the IP address is `192.168.1.100`, you would enter `http://192.168.1.100:8080` in the browser's address bar.
+
+## TO DO
+
+- User Management
+- Live data of host performance
+- Create VM
+

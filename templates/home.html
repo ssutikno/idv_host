@@ -19,17 +19,20 @@
                         {{ with .Host }}
                         <div class="card-header py-3 d-block collapsed" >
                             <div class="row">
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <h6 class="m-0 font-weight-bold text-primary" onclick="toggleHostCardBody()">Host</h6>
                                 </div>
                                 <div class="col-md-2 text-right">
                                     <p style="font-size: 0.9em;"><strong>Host Uptime:</strong> {{.UpTime}}</p>
                                 </div>
                                 <div class="col-md-2 text-right">
-                                    <a href="/api/host/restart" class="btn btn-danger btn-sm" style="font-size: 0.9em;">Restart</a>
+                                    <a  onclick="createVM()" class="btn btn-warning btn-sm" style="font-size: 0.9em;">Create VM</a>
                                 </div>
                                 <div class="col-md-2 text-right">
-                                    <a href="/api/host/reset" class="btn btn-warning btn-sm" style="font-size: 0.9em;">Reset</a>
+                                    <a onclick="restartHost()" class="btn btn-danger btn-sm" style="font-size: 0.9em;">Restart</a>
+                                </div>
+                                <div class="col-md-2 text-right">
+                                    <a  onclick="resetHost()" class="btn btn-warning btn-sm" style="font-size: 0.9em;">Reset</a>
                                 </div>
                             </div>
                         </div>
@@ -94,6 +97,7 @@
                                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                                     <thead>
                                         <tr>
+                                            <th>VM ID</th>
                                             <th>VM Name</th>
                                             <th>Status</th>
                                             <th>Actions</th>
@@ -102,6 +106,7 @@
                                     <tbody>
                                         {{range .VMs}}
                                         <tr>
+                                            <td>{{.ID}}</td>
                                             <td>{{.Name}}</td>
                                             <td>{{.Status}}</td>
                                             <td>
@@ -109,7 +114,7 @@
                                                 <a href="javascript:void(0);" onclick="rebootVM('{{.Name}}')" class="btn btn-warning btn-sm">Reboot</a>
                                                 <a href="javascript:void(0);" onclick="resetVM('{{.Name}}')" class="btn btn-info btn-sm">Reset</a>
                                                 <a href="javascript:void(0);" onclick="shutdownVM('{{.Name}}')" class="btn btn-danger btn-sm">Shutdown</a>
-                                                <a href="javascript:void(0);" onclick="poweroffVM('{{.Name}}')" class="btn btn-dark btn-sm">Destroy</a>
+                                                <a href="javascript:void(0);" onclick="poweroffVM('{{.Name}}')" class="btn btn-dark btn-sm">Power Off</a>
                                             </td>
                                             
                                         </tr>
@@ -132,21 +137,14 @@
 
     <script>
 
-// check if token is not exist, redirect to login page  
-
-      // get token from authorization header
-
-
-      
-       
-        alert("{{.Token}}");
-
+        bearer = "Bearer {{.Token}}";
 
         function rebootVM(name) {
+
             $.ajax({
             url: "/api/vms/reboot",
             type: "POST",
-            headers: { "Authorization": "Bearer {{.Token}}" },
+            headers: { "Authorization": bearer },
             data: { name: name},
             success: function() {
             location.reload();
@@ -156,10 +154,11 @@
 
         // function for startVM button
         function startVM(name) {
+
             $.ajax({
             url: "/api/vms/start",
             type: "POST",
-            headers: { "Authorization": "Bearer {{.Token}}" },
+            headers: { "Authorization": bearer },
             data: { name: name },
             success: function() {
             location.reload();
@@ -172,7 +171,7 @@
             $.ajax({
             url: "/api/vms/reset",
             type: "POST",
-            headers: { "Authorization": "Bearer {{.Token}}" },
+            headers: { "Authorization": bearer },
             data: { name: name },
             success: function() {
             location.reload();
@@ -185,7 +184,7 @@
             $.ajax({
             url: "/api/vms/shutdown",
             type: "POST",
-            headers: { "Authorization": "Bearer {{.Token}}" },
+            headers: { "Authorization": bearer },
             data: { name: name },
             success: function() {
             location.reload();
@@ -198,20 +197,30 @@
             $.ajax({
             url: "/api/vms/poweroff",
             type: "POST",
-            headers: { "Authorization": "Bearer {{.Token}}" },
+            headers: { "Authorization": bearer },
             data: { name: name },
             success: function() {
             location.reload();
             }
             });
         }
-
+        function createVM() {
+            $.ajax({
+            url: "/api/host/createvm",
+            type: "GET",
+            headers: { "Authorization": bearer },
+            data: {  },
+            success: function() {
+            location.reload();
+            }
+            });
+        }
         // function for host restart button
         function restartHost() {
             $.ajax({
             url: "/api/host/restart",
-            type: "POST",
-            headers: { "Authorization": "Bearer {{.Token}}" },
+            type: "GET",
+            headers: { "Authorization": bearer },
             data: {  },
             success: function() {
             location.reload();
@@ -223,8 +232,8 @@
         function resetHost() {
             $.ajax({
             url: "/api/host/reset",
-            type: "POST",
-            headers: { "Authorization": "Bearer {{.Token}}" },
+            type: "GET",
+            headers: { "Authorization": bearer },
             data: { },
             success: function() {
             location.reload();

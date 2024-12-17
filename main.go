@@ -68,7 +68,7 @@ func authMiddleware() gin.HandlerFunc {
 		// get the token from the Authorization header
 		tokenString := c.GetHeader("Authorization")
 		// print the token
-		log.Println("Auth Midleware Token:", tokenString)
+		// log.Println("Auth Midleware Token:", tokenString)
 
 		if tokenString == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
@@ -99,7 +99,11 @@ func authMiddleware() gin.HandlerFunc {
 
 		// call the next handler
 		// log the token
-		log.Println("Auth Middleware - Token Exiting :")
+		// log.Println("Auth Middleware - Token Exiting :")
+
+		// Store the intended URL (if needed)
+		c.Set("intendedUrl", c.Request.URL.Path)
+		c.Request.URL.Path = c.FullPath()
 		c.Next()
 	}
 }
@@ -107,9 +111,9 @@ func authMiddleware() gin.HandlerFunc {
 // authenicate the user
 func Auth(c *gin.Context) {
 	var user User
-	log.Println("Auth 1", c)
+	// log.Println("Auth 1", c)
 
-	log.Println("User / password", c.PostForm("username"), " / ", c.PostForm("password"))
+	// log.Println("User / password", c.PostForm("username"), " / ", c.PostForm("password"))
 	// bind the user information from the form data
 	if err := c.ShouldBind(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
@@ -149,6 +153,48 @@ func LoginHandler(c *gin.Context) {
 	c.HTML(http.StatusOK, "login.html", nil)
 }
 
+// function for user check exist on the users.json
+func userExists(username, password string) bool {
+	// return false if the username or password is empty
+	if username == "" || password == "" {
+		return false
+	}
+
+	for _, u := range users {
+		if u.Username == username && u.Password == password {
+			return true
+		}
+	}
+	return false
+}
+
+// function login for api to get token
+func LoginApi(c *gin.Context) {
+	log.Println("Login API Handler")
+	// get the username and password from form data
+	username := c.PostForm("username")
+	password := c.PostForm("password")
+	// log the form data
+	log.Println("LoginHandler - username:", username)
+	log.Println("LoginHandler - password:", password)
+
+	// check if the user exists
+
+	if userExists(username, password) {
+		// return the token
+		token, err := generateToken(User{Username: username, Password: password})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"token": token})
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		return
+	}
+
+}
+
 // make another authMiddleware function for the homehandler
 func homeauthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -158,13 +204,13 @@ func homeauthMiddleware() gin.HandlerFunc {
 		username := c.PostForm("username")
 		password := c.PostForm("password")
 		// log the form data
-		log.Println("HomeAuthMiddleware - username:", username)
-		log.Println("HomeAuthMiddleware - password:", password)
+		// log.Println("HomeAuthMiddleware - username:", username)
+		// log.Println("HomeAuthMiddleware - password:", password)
 
 		// check if the username and password are empty
 		if username == "" || password == "" {
 			c.Redirect(http.StatusFound, "/login")
-			log.Println("LoginHandler - empty username or password")
+			// log.Println("LoginHandler - empty username or password")
 			c.Abort()
 			return
 		}
@@ -202,28 +248,30 @@ func homeauthMiddleware() gin.HandlerFunc {
 
 // main function
 func main() {
+	gin.SetMode(gin.ReleaseMode)
 
 	router := gin.Default()
 	router.LoadHTMLGlob("templates/*")
 
 	// add the handlers for the API, with the authMiddleware. make sure the user is authenticated
-	api := router.Group("/api", authMiddleware())
+	api := router.Group("/api/vms", authMiddleware())
 	{
 
-		api.GET("/vms", handlers.ListVMs)
-		api.POST("/vms/start", handlers.StartVM)
-		api.POST("/vms/reboot", handlers.RebootVM)
-		api.POST("/vms/reset", handlers.ResetVM)
-		api.POST("/vms/shutdown", handlers.ShutdownVM)
-		api.POST("/vms/poweroff", handlers.PowerOffVM)
-		api.POST("/vms/create", handlers.CreateVM)
+		api.GET("/list", handlers.ListVMs)
+		api.POST("/start", handlers.StartVM)
+		api.POST("/reboot", handlers.RebootVM)
+		api.POST("/reset", handlers.ResetVM)
+		api.POST("/shutdown", handlers.ShutdownVM)
+		api.POST("/poweroff", handlers.PowerOffVM)
 
-		// api.GET("/vms/createvmform", handlers.CreateVMForm)
+	}
 
-		api.GET("/host/network", handlers.GetNetworkData)
-
-		api.POST("/host/restart", handlers.RestartHost)
-		api.POST("/host/reset", handlers.ResetHost)
+	hostapi := router.Group("/api/host", authMiddleware())
+	{
+		hostapi.GET("/createvm", handlers.CreateVM)
+		hostapi.GET("/restart", handlers.RestartHost)
+		hostapi.GET("/reset", handlers.ResetHost)
+		hostapi.GET("/network", handlers.GetNetworkData)
 	}
 
 	// handle login form
@@ -233,11 +281,21 @@ func main() {
 	// handle authentication from login form, and redirect to home page
 	router.POST("/login", homeauthMiddleware(), handlers.HomeHandler)
 
+	// handle the login api
+	router.POST("/loginapi", LoginApi)
+
 	// handle for the homehandler page, if not athenticated, then redirect to login page
 	router.GET("/", homeauthMiddleware(), handlers.HomeHandler)
 
 	// Start the server
 
+	// check if the port is already used
+	// if the port is already used, then exit the program and print the error
+
 	log.Println("Server starting on port 8080...")
-	router.Run(":8080")
+
+	if err := router.Run(":8080"); err != nil {
+		log.Fatal("Server starting error:", err)
+	}
+
 }

@@ -3,7 +3,6 @@ package vm
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -11,6 +10,7 @@ import (
 
 // VM represents a virtual machine with its name and status
 type VM struct {
+	ID     string
 	Name   string
 	Status string
 }
@@ -81,6 +81,7 @@ func ListVMs() ([]VM, error) {
 			continue
 		}
 		vms = append(vms, VM{
+			ID:     fields[0],
 			Name:   fields[1],
 			Status: fields[2],
 		})
@@ -91,8 +92,6 @@ func ListVMs() ([]VM, error) {
 
 // StartVM starts a virtual machine given its name
 func StartVM(vmName string) error {
-	// log the VM name
-	log.Println("Starting VM with name: ", vmName)
 
 	if vmName == "" {
 		return errors.New("vmName cannot be empty")

@@ -302,3 +302,5 @@ func KillProcess(pid string) error {
 	}
 	return nil
 }
+
+// function CreateVM the parameter is the xml which contains the variables of the VM
